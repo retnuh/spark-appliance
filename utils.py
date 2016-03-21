@@ -35,6 +35,11 @@ def get_private_ip():
     return private_ip
 
 
+def get_region():
+    global region
+    return region
+
+
 def get_instance_ips(elb, ec2, stack_name):
     instance_ips = []
     response = elb.describe_instance_health(LoadBalancerName=stack_name)
@@ -134,14 +139,18 @@ def get_alive_master_ip():
             zk.stop()
         return master_ip
     elif master_stack_name != "" and region is not None:
-        elb = boto3.client('elb', region_name=region)
-        ec2 = boto3.client('ec2', region_name=region)
-        master_ips = get_instance_ips(elb, ec2, master_stack_name)
-        if len(master_ips) != 1:
+        try:
+            elb = boto3.client('elb', region_name=region)
+            ec2 = boto3.client('ec2', region_name=region)
+            master_ips = get_instance_ips(elb, ec2, master_stack_name)
+            if len(master_ips) != 1:
+                return ""  # shouldn't happen without zookeeper
+            elif len(master_ips) == 1:
+                return master_ips[0]
+            else:
+                return ""
+        except:
             return ""
-        else:
-            for ip in master_ips:
-                return ip
     else:
         return ""
 
