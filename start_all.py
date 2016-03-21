@@ -9,6 +9,11 @@ from time import sleep
 
 logging.basicConfig(level=getattr(logging, 'INFO', None))
 
+scalyr_key = utils.get_os_env('SCALYR_KEY')
+use_internal_scalyr = scalyr_key != ""
+if use_internal_scalyr:
+    scalyr_agent_out = subprocess.Popen(["scalyr-agent-2", "start"])
+
 spark_dir = utils.get_os_env('SPARK_DIR')
 
 if utils.get_os_env('PYTHON_LIBS') != "":
@@ -121,7 +126,8 @@ if utils.get_os_env('START_MASTER').lower() == 'true':
         except:
             logging.warning("Invalid format of DEFAULT_CORES env variable!")
     master_log = subprocess.check_output([spark_dir + "/sbin/start-master.sh"], universal_newlines=True)
-    log_watchers['Master'] = subprocess.Popen(["tail", "-f", master_log.rsplit(None, 1)[-1]])
+    if not use_internal_scalyr:
+        log_watchers['Master'] = subprocess.Popen(["tail", "-f", master_log.rsplit(None, 1)[-1]])
 
 master_stack_name = utils.get_os_env('MASTER_STACK_NAME')
 master_uri = ""
@@ -158,7 +164,8 @@ def create_worker_process(masterUri):
             logging.info("Spark master daemon running on port 7077, worker bind to random port.")
 
         worker_log = subprocess.check_output([spark_dir + "/sbin/start-slave.sh", masterUri], universal_newlines=True)
-        log_watchers['Worker'] = subprocess.Popen(["tail", "-f", worker_log.rsplit(None, 1)[-1]])
+        if not use_internal_scalyr:
+            log_watchers['Worker'] = subprocess.Popen(["tail", "-f", worker_log.rsplit(None, 1)[-1]])
 
 create_worker_process(master_uri)
 
@@ -173,7 +180,8 @@ if utils.get_os_env('START_THRIFTSERVER').lower() == 'true':
                                                     "--hiveconf", "hive.server2.logging.operation.enabled=false",
                                                     "--hiveconf", "hive.server2.logging.operation.log.location=/tmp"],
                                                    universal_newlines=True)
-        log_watchers['ThriftServer'] = subprocess.Popen(["tail", "-f", thriftserver_log.rsplit(None, 1)[-1]])
+        if not use_internal_scalyr:
+            log_watchers['ThriftServer'] = subprocess.Popen(["tail", "-f", thriftserver_log.rsplit(None, 1)[-1]])
 
 if utils.get_os_env('START_WEBAPP').lower() == 'true':
     logging.info("Daemon started, starting webapp now...")

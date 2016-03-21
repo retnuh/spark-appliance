@@ -1,0 +1,60 @@
+// Configuration for the Scalyr Agent. For help:
+//
+// https://www.scalyr.com/help/scalyr-agent-2
+
+{
+    import_vars: [ "SCALYR_KEY", "APPLICATION_ID", "APPLICATION_VERSION", "START_MASTER", "START_WORKER" ],
+    api_key: "$SCALYR_KEY",
+
+    debug_init: true,
+    max_log_offset_size: 30000000,
+    implicit_metric_monitor: true,
+    implicit_agent_process_metrics_monitor: true,
+
+    // Fields describing this server. These fields are attached to each log message, and
+    // can be used to filter data from a particular server or group of servers.
+    server_attributes: {
+        // Fill in this field if you'd like to override the server's hostname.
+        serverHost: "$APPLICATION_ID-$APPLICATION_VERSION",
+        spark_master: "$START_MASTER",
+        spark_worker: "$START_WORKER",
+        application_id: "$APPLICATION_ID",
+        application_version: "$APPLICATION_VERSION"
+        
+        // You can add whatever additional fields you'd like.
+        // tier: "production"
+    },
+
+    // Log files to upload to Scalyr. You can use '*' wildcards here.
+    logs: [
+        {
+            path: "/opt/spark-*/work/*/*/stdout",
+            attributes: {
+                filename: "stdout"
+            }
+        },
+        {
+            path: "/opt/spark-*/work/*/*/stderr",
+            attributes: {
+                filename: "stderr"
+            }
+        },
+        {
+            path: "/opt/spark-*/logs/spark*.out",
+            attributes: {}
+        }
+    ],
+
+    monitors: [
+        // {
+        //   module: "scalyr_agent.builtin_monitors.linux_process_metrics",
+        //   id: "scrapyd",
+        //   commandline: ".*scrapyd.*",
+        // },
+        // {
+        //   module: "scalyr_agent.builtin_monitors.linux_process_metrics",
+        //   id: "scrapy",
+        //   commandline: ".*scrapyd.runner crawl.*",
+        // }
+    ]
+}

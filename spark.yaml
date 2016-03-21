@@ -12,7 +12,7 @@ SenzaInfo:
         Description: "Mint Bucket of Spark application"
         Default: ""
     - ScalyrKey:
-        Description: "The API key of Scalyr logging service used by Taupage"
+        Description: "The API key of Scalyr logging service used by Taupage & the Docker image"
         Default: ""
     - InstanceType:
         Description: "The instance type for the nodes of cluster"
@@ -135,6 +135,9 @@ SenzaComponents:
           TOKENINFO_URL: "{{Arguments.TokenInfoURL}}"
           OAUTH2_SCOPE: "{{Arguments.Oauth2Scope}}"
           EXT_CONF: "{{Arguments.ExternalConfig}}"
+          SCALYR_KEY: "{{Arguments.ScalyrKey}}"
+          APPLICATION_ID: "{{Arguments.ApplicationID}}"
+          APPLICATION_VERSION: "{{Arguments.version}}"
   - AppLoadBalancer:
       Type: Senza::WeightedDnsElasticLoadBalancer
       HTTPPort: 8000

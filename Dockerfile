@@ -45,8 +45,17 @@ COPY kernel.json /tmp/
 COPY start_notebook.sh /opt/
 RUN chmod 777 /opt/start_notebook.sh
 
-COPY scm-source.json /
-
 WORKDIR /opt
+
+RUN apt-get install apt-transport-https -y --force-yes
+RUN wget -q https://www.scalyr.com/scalyr-repo/stable/latest/scalyr-repo-bootstrap_1.2.1_all.deb \
+ && dpkg -i scalyr-repo-bootstrap_1.2.1_all.deb \
+ && apt-get update \
+ && apt-get install scalyr-repo \
+ && apt-get install scalyr-agent-2
+
+
+COPY scm-source.json /
+COPY scalyr-agent-conf.json /etc/scalyr-agent-2/agent.json
 
 CMD /opt/start_all.py
